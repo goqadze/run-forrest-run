@@ -1,0 +1,17 @@
+Kubernetes Cluster (City)
+│
+├─ Namespace "dev" (District A)
+│   ├─ Pod: my-app-1 (Room)
+│   │    └─ Container: nginx
+│   └─ Pod: my-app-2
+│
+├─ Namespace "prod" (District B)
+│   ├─ Pod: web-server
+│   └─ Pod: db-server
+│
+└─ Nodes (Houses / AWS EC2s)
+     ├─ Node 1 (EC2 instance)
+     │    ├─ Pod my-app-1
+     │    └─ Pod web-server
+     └─ Node 2 (EC2 instance)
+          └─ Pod db-server

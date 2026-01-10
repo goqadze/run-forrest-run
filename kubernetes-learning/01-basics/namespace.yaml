@@ -1,0 +1,29 @@
+# Namespace for organizing and isolating resources
+# Useful for separating environments (dev, staging, prod) or teams
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: learning               # Namespace name
+  labels:
+    name: learning
+    purpose: education
+
+# Namespaces provide:
+# - Resource isolation
+# - Resource quotas
+# - Access control (RBAC)
+# - Logical grouping
+#
+# To create:
+# kubectl apply -f namespace.yaml
+#
+# To use this namespace:
+# kubectl apply -f simple-pod.yaml -n learning
+# kubectl get pods -n learning
+#
+# Set as default namespace for current context:
+# kubectl config set-context --current --namespace=learning
+#
+# Delete namespace (DELETES ALL RESOURCES IN IT!):
+# kubectl delete namespace learning

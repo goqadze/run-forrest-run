@@ -1,0 +1,69 @@
+# Multi-container Pod demonstrating the sidecar pattern
+# Both containers share the same network and can communicate via localhost
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-container-pod
+  labels:
+    app: multi-container
+    pattern: sidecar
+spec:
+  containers:
+
+  # Main application container
+  - name: nginx
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+    volumeMounts:               # Mount shared volume
+    - name: shared-logs
+      mountPath: /var/log/nginx
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+
+  # Sidecar container - processes logs from main container
+  - name: sidecar
+    image: busybox:latest
+    command: ["/bin/sh"]       # Override default command
+    args:                      # Arguments to the command
+      - -c
+      - |
+        # Continuously tail the nginx access log
+        tail -f /var/log/nginx/access.log
+    volumeMounts:               # Mount same shared volume
+    - name: shared-logs
+      mountPath: /var/log/nginx
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "100m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+
+  # Shared volume accessible to both containers
+  volumes:
+  - name: shared-logs
+    emptyDir: {}               # Temporary directory (deleted when Pod is deleted)
+
+# Multi-container Pods are useful for:
+# - Logging sidecars (like this example)
+# - Service mesh proxies (Istio, Linkerd)
+# - Init containers for setup tasks
+# - Adapters to normalize output
+#
+# To create:
+# kubectl apply -f multi-container-pod.yaml
+#
+# To view logs from specific container:
+# kubectl logs multi-container-pod -c nginx
+# kubectl logs multi-container-pod -c sidecar
+#
+# To exec into specific container:
+# kubectl exec -it multi-container-pod -c nginx -- /bin/sh

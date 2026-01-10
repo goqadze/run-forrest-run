@@ -1,0 +1,36 @@
+# A simple Pod with a single container running nginx
+# This is the most basic Kubernetes resource
+
+apiVersion: v1              # API version for Pods
+kind: Pod                    # Type of resource
+metadata:                    # Metadata about the Pod
+  name: nginx-pod            # Pod name (must be unique in namespace)
+  labels:                    # Labels for organizing and selecting
+    app: nginx
+    environment: learning
+spec:                        # Pod specification
+  containers:                # List of containers in this Pod
+  - name: nginx              # Container name
+    image: nginx:latest      # Docker image to use
+    ports:                   # Ports to expose
+    - containerPort: 80      # Container listens on port 80
+      protocol: TCP
+    resources:               # Resource requests and limits (optional but recommended)
+      requests:              # Minimum resources guaranteed
+        memory: "64Mi"
+        cpu: "250m"
+      limits:                # Maximum resources allowed
+        memory: "128Mi"
+        cpu: "500m"
+
+# To create this Pod:
+# kubectl apply -f simple-pod.yaml
+#
+# To view it:
+# kubectl get pod nginx-pod
+#
+# To access nginx (from within cluster):
+# kubectl exec -it nginx-pod -- curl localhost
+#
+# To delete:
+# kubectl delete -f simple-pod.yaml

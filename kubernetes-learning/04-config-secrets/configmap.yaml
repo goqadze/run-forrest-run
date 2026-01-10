@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  app.properties: |
+    environment=development
+    debug=true
+    max_connections=100
+  log_level: "info"
+  database_url: "postgres://localhost:5432/mydb"

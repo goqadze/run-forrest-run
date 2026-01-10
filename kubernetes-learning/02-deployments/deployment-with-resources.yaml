@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment-resources
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-resources
+  template:
+    metadata:
+      labels:
+        app: nginx-resources
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:              # Minimum guaranteed resources
+            memory: "64Mi"
+            cpu: "250m"
+          limits:                # Maximum allowed resources
+            memory: "128Mi"
+            cpu: "500m"
+        livenessProbe:           # Check if container is alive
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:          # Check if container is ready for traffic
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 3
