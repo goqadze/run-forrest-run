@@ -1,0 +1,26 @@
+# BAD: Unoptimized Dockerfile
+# This results in a ~900MB image
+
+FROM ubuntu:22.04
+
+# BAD: Multiple RUN commands create multiple layers
+RUN apt-get update
+RUN apt-get install -y python3
+RUN apt-get install -y python3-pip
+RUN apt-get install -y curl
+RUN apt-get install -y vim
+RUN apt-get install -y git
+
+# BAD: Cache not cleaned
+# BAD: Installing unnecessary packages
+
+WORKDIR /app
+
+# BAD: Copying everything at once (breaks caching)
+COPY . .
+
+RUN pip3 install -r requirements.txt
+
+EXPOSE 5000
+
+CMD ["python3", "app.py"]

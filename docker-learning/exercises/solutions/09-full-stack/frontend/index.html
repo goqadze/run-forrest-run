@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-Stack Todo App</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        h1 { color: #333; }
+        input { padding: 10px; width: 70%; margin-right: 10px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .delete { color: red; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Todo App</h1>
+    <div>
+        <input type="text" id="todoInput" placeholder="Enter a todo...">
+        <button onclick="addTodo()">Add</button>
+    </div>
+    <ul id="todoList"></ul>
+
+    <script>
+        const API_URL = '/api/todos';
+
+        async function fetchTodos() {
+            const res = await fetch(API_URL);
+            const todos = await res.json();
+            const list = document.getElementById('todoList');
+            list.innerHTML = todos.map(t =>
+                `<li>${t.title} <span class="delete" onclick="deleteTodo(${t.id})">X</span></li>`
+            ).join('');
+        }
+
+        async function addTodo() {
+            const input = document.getElementById('todoInput');
+            if (!input.value) return;
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: input.value })
+            });
+            input.value = '';
+            fetchTodos();
+        }
+
+        async function deleteTodo(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchTodos();
+        }
+
+        fetchTodos();
+    </script>
+</body>
+</html>

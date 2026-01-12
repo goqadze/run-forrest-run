@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: health-api
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  database:
+    image: postgres:15-alpine
+    container_name: health-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: app
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  # This service waits for healthy dependencies
+  app:
+    image: alpine
+    container_name: health-app
+    depends_on:
+      api:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    command: echo "All dependencies are healthy!"
+    networks:
+      - app-network
+
+networks:
+  app-network:

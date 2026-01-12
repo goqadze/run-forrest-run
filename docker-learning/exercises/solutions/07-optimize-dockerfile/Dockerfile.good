@@ -1,0 +1,30 @@
+# GOOD: Optimized Dockerfile
+# This results in a ~150MB image
+
+# 1. Use smaller base image
+FROM python:3.11-slim
+
+# 2. Combine commands and clean cache in same layer
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir --upgrade pip
+
+WORKDIR /app
+
+# 3. Copy dependencies first (better layer caching)
+COPY requirements.txt .
+
+# 4. Install dependencies with no cache
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Copy app code last (changes most frequently)
+COPY app.py .
+
+# 6. Run as non-root user
+RUN useradd -m appuser
+USER appuser
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]

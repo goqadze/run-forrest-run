@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: reverse-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./html:/usr/share/nginx/html:ro
+    depends_on:
+      - app1
+      - app2
+      - api
+    networks:
+      - proxy-network
+
+  # Backend App 1
+  app1:
+    build:
+      context: ./apps
+      args:
+        APP_NAME: "App 1"
+        APP_PORT: "3001"
+    container_name: app1
+    environment:
+      - APP_NAME=App 1
+      - APP_PORT=3001
+    networks:
+      - proxy-network
+
+  # Backend App 2
+  app2:
+    build:
+      context: ./apps
+      args:
+        APP_NAME: "App 2"
+        APP_PORT: "3002"
+    container_name: app2
+    environment:
+      - APP_NAME=App 2
+      - APP_PORT=3002
+    networks:
+      - proxy-network
+
+  # API Service (multiple instances for load balancing demo)
+  api:
+    build:
+      context: ./apps
+      args:
+        APP_NAME: "API"
+        APP_PORT: "3000"
+    environment:
+      - APP_NAME=API
+      - APP_PORT=3000
+    deploy:
+      replicas: 2
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    driver: bridge

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    command: node server.js
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      # Method 1: Inline values
+      - NODE_ENV=production
+      # Method 2: From .env file (variable substitution)
+      - APP_NAME=${APP_NAME}
+      - DEBUG=${DEBUG:-false}
+    env_file:
+      # Method 3: Load from specific file
+      - ./config/database.env
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      # Direct assignment
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-myapp}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  db-data:

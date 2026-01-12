@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: secrets-app
+    ports:
+      - "3000:3000"
+    secrets:
+      - db_password
+      - api_key
+    environment:
+      - DB_HOST=database
+      - DB_USER=appuser
+      # Password comes from secret file, not env var
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+    networks:
+      - app-network
+
+  database:
+    image: postgres:15-alpine
+    container_name: secrets-db
+    secrets:
+      - db_password
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB: secretsapp
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  api_key:
+    file: ./secrets/api_key.txt
+
+networks:
+  app-network:
+
+volumes:
+  db-data:

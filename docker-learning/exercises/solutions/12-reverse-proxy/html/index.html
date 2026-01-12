@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx Reverse Proxy Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        h1 { color: #009639; }
+        .endpoint { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        code { background: #e0e0e0; padding: 2px 6px; border-radius: 3px; }
+        a { color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Nginx Reverse Proxy Demo</h1>
+    <p>This page is served by Nginx. The following routes are proxied to backend services:</p>
+
+    <div class="endpoint">
+        <h3><a href="/app1">/app1</a></h3>
+        <p>Routes to App 1 service (port 3001)</p>
+    </div>
+
+    <div class="endpoint">
+        <h3><a href="/app2">/app2</a></h3>
+        <p>Routes to App 2 service (port 3002)</p>
+    </div>
+
+    <div class="endpoint">
+        <h3><a href="/api/">/api/</a></h3>
+        <p>Routes to API service with load balancing</p>
+    </div>
+
+    <div class="endpoint">
+        <h3><a href="/health">/health</a></h3>
+        <p>Nginx health check endpoint</p>
+    </div>
+
+    <h2>Test with curl:</h2>
+    <pre>
+curl http://localhost/app1
+curl http://localhost/app2
+curl http://localhost/api/
+    </pre>
+</body>
+</html>
