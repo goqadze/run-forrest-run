@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"go-learning/basics"
 	"go-learning/concurrency"
+	"go-learning/ginapp"
 	"go-learning/interfaces"
+	"go-learning/nethttp"
 	"go-learning/structs"
 )
 
@@ -26,6 +28,14 @@ func main() {
 	// Run concurrency examples
 	fmt.Println("\n--- 4. Concurrency ---")
 	concurrency.RunConcurrency()
+
+	// Run net/http examples
+	fmt.Println("\n--- 5. Net/HTTP ---")
+	nethttp.RunNetHTTP()
+
+	// Run Gin examples
+	fmt.Println("\n--- 6. Gin Framework ---")
+	ginapp.RunGinApp()
 
 	fmt.Println("\n=== All examples completed! ===")
 }
