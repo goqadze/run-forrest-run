@@ -1,0 +1,49 @@
+================================================================================
+                    INGRESS CONTROLLER & ROUTING
+================================================================================
+Description: Ingress manages external HTTP/HTTPS access to services,
+providing load balancing, SSL termination, and name-based virtual hosting.
+
+                              INTERNET
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        INGRESS CONTROLLER                                    │
+│                    (nginx-ingress / traefik)                                │
+│                     External IP: 52.14.88.100                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                  │
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+          ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          INGRESS RESOURCE                                    │
+│  rules:                                                                      │
+│  - host: api.myapp.com     ──────────► api-service:8080                     │
+│  - host: web.myapp.com     ──────────► web-service:80                       │
+│  - host: admin.myapp.com   ──────────► admin-service:3000                   │
+│                                                                              │
+│  Path-based routing:                                                         │
+│  - myapp.com/api/*         ──────────► api-service:8080                     │
+│  - myapp.com/static/*      ──────────► cdn-service:80                       │
+│  - myapp.com/*             ──────────► frontend-service:80                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+          │                       │                       │
+          ▼                       ▼                       ▼
+   ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+   │ API Service │         │ Web Service │         │Admin Service│
+   │ ClusterIP   │         │ ClusterIP   │         │ ClusterIP   │
+   └──────┬──────┘         └──────┬──────┘         └──────┬──────┘
+          │                       │                       │
+    ┌─────┴─────┐           ┌─────┴─────┐           ┌─────┴─────┐
+    ▼           ▼           ▼           ▼           ▼           ▼
+┌───────┐ ┌───────┐   ┌───────┐ ┌───────┐     ┌───────┐ ┌───────┐
+│Pod API│ │Pod API│   │Pod Web│ │Pod Web│     │  Pod  │ │  Pod  │
+│   1   │ │   2   │   │   1   │ │   2   │     │ Admin │ │ Admin │
+└───────┘ └───────┘   └───────┘ └───────┘     └───────┘ └───────┘
+
+Benefits of Ingress:
+- Single external IP for multiple services
+- SSL/TLS termination at one point
+- Path and host-based routing
+- Rate limiting, authentication (with annotations)

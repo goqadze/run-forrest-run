@@ -1,0 +1,42 @@
+================================================================================
+                    SIMPLE: NODE AND POD RELATIONSHIP
+================================================================================
+Description: Nodes are the worker machines (VMs or physical servers) that
+run your pods. The scheduler decides which node runs each pod.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              NODE (Worker Machine)                           │
+│                           e.g., EC2 instance, VM                            │
+│                                                                              │
+│   Resources:                                                                 │
+│   - CPU: 4 cores                                                             │
+│   - Memory: 16 GB                                                            │
+│   - Disk: 100 GB                                                             │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                          KUBELET                                     │   │
+│   │              (Agent that manages pods on this node)                  │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                         │
+│              ┌─────────────────────┼─────────────────────┐                  │
+│              │                     │                     │                  │
+│              ▼                     ▼                     ▼                  │
+│   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐          │
+│   │      POD        │   │      POD        │   │      POD        │          │
+│   │    (my-app)     │   │   (database)    │   │    (cache)      │          │
+│   │                 │   │                 │   │                 │          │
+│   │  ┌───────────┐  │   │  ┌───────────┐  │   │  ┌───────────┐  │          │
+│   │  │ Container │  │   │  │ Container │  │   │  │ Container │  │          │
+│   │  │  nginx    │  │   │  │ postgres  │  │   │  │   redis   │  │          │
+│   │  └───────────┘  │   │  └───────────┘  │   │  └───────────┘  │          │
+│   │                 │   │                 │   │                 │          │
+│   │  CPU: 500m      │   │  CPU: 1 core    │   │  CPU: 250m      │          │
+│   │  Mem: 512Mi     │   │  Mem: 2Gi       │   │  Mem: 256Mi     │          │
+│   └─────────────────┘   └─────────────────┘   └─────────────────┘          │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Think of it like:
+- Node = A physical computer/server
+- Pod  = A running application on that computer
+- Container = The actual process inside the pod

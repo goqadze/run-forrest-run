@@ -1,0 +1,26 @@
+================================================================================
+                        BASIC POD STRUCTURE
+================================================================================
+Description: A Pod is the smallest deployable unit in Kubernetes.
+It wraps one or more containers that share storage and network.
+
+┌─────────────────────────────────────────┐
+│              POD (my-app)               │
+│  ┌───────────────────────────────────┐  │
+│  │         Container: nginx          │  │
+│  │  ┌─────────────────────────────┐  │  │
+│  │  │  - Image: nginx:1.21        │  │  │
+│  │  │  - Port: 80                 │  │  │
+│  │  │  - CPU: 100m                │  │  │
+│  │  │  - Memory: 128Mi            │  │  │
+│  │  └─────────────────────────────┘  │  │
+│  └───────────────────────────────────┘  │
+│                                         │
+│  Shared: IP Address, Volumes, Network   │
+└─────────────────────────────────────────┘
+
+Key Points:
+- Pod = 1 or more containers
+- Containers in a pod share the same IP
+- Pods are ephemeral (temporary)
+- Each pod gets a unique IP address

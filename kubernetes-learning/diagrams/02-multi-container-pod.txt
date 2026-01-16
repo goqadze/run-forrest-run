@@ -1,0 +1,35 @@
+================================================================================
+                    MULTI-CONTAINER POD (Sidecar Pattern)
+================================================================================
+Description: Multiple containers in one pod share resources and work together.
+Common patterns: Sidecar, Ambassador, Adapter.
+
+┌─────────────────────────────────────────────────────────────┐
+│                    POD (web-app-pod)                        │
+│                                                             │
+│  ┌─────────────────────┐    ┌─────────────────────┐        │
+│  │  Main Container     │    │  Sidecar Container  │        │
+│  │  (web-app)          │    │  (log-collector)    │        │
+│  │                     │    │                     │        │
+│  │  Image: node:18     │    │  Image: fluentd     │        │
+│  │  Port: 3000         │    │  Reads logs from    │        │
+│  │  Writes logs to ──────────► shared volume      │        │
+│  │  /var/log/app       │    │                     │        │
+│  └─────────────────────┘    └─────────────────────┘        │
+│              │                        │                     │
+│              └────────┬───────────────┘                     │
+│                       ▼                                     │
+│            ┌─────────────────────┐                          │
+│            │   Shared Volume    │                          │
+│            │   (emptyDir)       │                          │
+│            │   /var/log/app     │                          │
+│            └─────────────────────┘                          │
+│                                                             │
+│  Shared: localhost (127.0.0.1), Pod IP: 10.244.1.5         │
+└─────────────────────────────────────────────────────────────┘
+
+Common Sidecar Use Cases:
+- Log shipping (Fluentd, Filebeat)
+- Service mesh proxy (Envoy, Istio)
+- Configuration sync
+- Security scanning

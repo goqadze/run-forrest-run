@@ -1,0 +1,48 @@
+================================================================================
+                        KUBERNETES SERVICE TYPES
+================================================================================
+Description: Services provide stable networking to access pods.
+Different types expose pods in different ways.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              INTERNET                                        │
+└───────────────────────────────────┬─────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  LoadBalancer Service (Type: LoadBalancer)                                   │
+│  External IP: 52.14.88.100:80                                               │
+│  - Provisions cloud load balancer (AWS ELB, GCP LB, etc.)                   │
+└───────────────────────────────────┬─────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  NodePort Service (Type: NodePort)                                           │
+│  <NodeIP>:30080 → Service                                                    │
+│  - Opens port on ALL nodes (30000-32767)                                    │
+└───────────────────────────────────┬─────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ClusterIP Service (Type: ClusterIP) - DEFAULT                               │
+│  web-service.default.svc.cluster.local:80                                    │
+│  ClusterIP: 10.96.45.23                                                      │
+│  - Internal only, not accessible from outside                               │
+└───────────────────────────────────┬─────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┼───────────────┐
+                    ▼               ▼               ▼
+             ┌──────────┐    ┌──────────┐    ┌──────────┐
+             │  Pod 1   │    │  Pod 2   │    │  Pod 3   │
+             │ 10.1.1.5 │    │ 10.1.1.6 │    │ 10.1.1.7 │
+             └──────────┘    └──────────┘    └──────────┘
+
+Service Comparison:
+┌──────────────┬─────────────────────┬─────────────────────────────────┐
+│ Type         │ Accessible From     │ Use Case                        │
+├──────────────┼─────────────────────┼─────────────────────────────────┤
+│ ClusterIP    │ Inside cluster only │ Internal microservices          │
+│ NodePort     │ Node IP + Port      │ Development, debugging          │
+│ LoadBalancer │ External IP         │ Production external traffic     │
+│ ExternalName │ DNS CNAME           │ External services mapping       │
+└──────────────┴─────────────────────┴─────────────────────────────────┘

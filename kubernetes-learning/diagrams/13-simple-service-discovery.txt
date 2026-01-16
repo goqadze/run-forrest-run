@@ -1,0 +1,77 @@
+================================================================================
+                    SIMPLE: HOW SERVICES FIND PODS
+================================================================================
+Description: Services use labels to find and route traffic to pods.
+Labels are like tags - Services look for pods with matching tags.
+
+STEP 1: Pods have labels (tags)
+─────────────────────────────────────────────────────────────────────────────
+
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│      Pod 1      │  │      Pod 2      │  │      Pod 3      │
+│                 │  │                 │  │                 │
+│  Labels:        │  │  Labels:        │  │  Labels:        │
+│  app: web       │  │  app: web       │  │  app: database  │
+│  version: v1    │  │  version: v1    │  │  version: v1    │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+
+
+STEP 2: Service selects pods by labels
+─────────────────────────────────────────────────────────────────────────────
+
+┌──────────────────────────────────────────────────────────────────┐
+│                     SERVICE (web-service)                         │
+│                                                                   │
+│  selector:                                                        │
+│    app: web          ◄── "Find all pods with label app=web"      │
+│                                                                   │
+│  Endpoints found:                                                 │
+│    - Pod 1 (10.1.1.5)  ✓  matches                                │
+│    - Pod 2 (10.1.1.6)  ✓  matches                                │
+│    - Pod 3 (10.1.1.7)  ✗  does not match (app=database)          │
+│                                                                   │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              │
+       ┌──────────┐   ┌──────────┐         │
+       │  Pod 1   │   │  Pod 2   │         X (not selected)
+       │ app: web │   │ app: web │         │
+       └──────────┘   └──────────┘   ┌─────┴────┐
+                                     │  Pod 3   │
+                                     │app: db   │
+                                     └──────────┘
+
+
+STEP 3: Traffic flows through Service to matching pods
+─────────────────────────────────────────────────────────────────────────────
+
+       ┌─────────┐
+       │ Request │
+       │ from    │
+       │ client  │
+       └────┬────┘
+            │
+            ▼
+  ┌──────────────────┐
+  │ web-service      │
+  │ IP: 10.96.0.100  │
+  │ DNS: web-service │
+  └────────┬─────────┘
+           │
+           │  Load balances
+           │  (round-robin)
+           │
+     ┌─────┴─────┐
+     ▼           ▼
+┌─────────┐ ┌─────────┐
+│  Pod 1  │ │  Pod 2  │
+│10.1.1.5 │ │10.1.1.6 │
+└─────────┘ └─────────┘
+
+Key Points:
+- Labels are key-value pairs attached to pods
+- Services use selectors to find pods with matching labels
+- When pods are added/removed, Service automatically updates
+- Clients connect to Service IP, not individual pod IPs

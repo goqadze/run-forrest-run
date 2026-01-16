@@ -1,0 +1,85 @@
+================================================================================
+                HORIZONTAL POD AUTOSCALER (HPA)
+================================================================================
+Description: HPA automatically scales the number of pods based on observed
+CPU utilization, memory, or custom metrics.
+
+                    ┌─────────────────────────────────────┐
+                    │        METRICS SERVER               │
+                    │  Collects resource metrics from     │
+                    │  kubelets on each node              │
+                    └──────────────────┬──────────────────┘
+                                       │
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     HORIZONTAL POD AUTOSCALER                                 │
+│                                                                               │
+│  Target: deployment/web-app                                                   │
+│  Min Replicas: 2                                                              │
+│  Max Replicas: 10                                                             │
+│  Target CPU: 70%                                                              │
+│  Target Memory: 80%                                                           │
+│                                                                               │
+│  Current State:                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │ CPU Utilization: 85%  ████████████████░░░░ (above target)               │ │
+│  │ Memory Usage:    60%  ████████████░░░░░░░░ (below target)               │ │
+│  │ Current Replicas: 3                                                      │ │
+│  │ Desired Replicas: 4 (scaling up due to high CPU)                        │ │
+│  └─────────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       │ Adjusts replica count
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         DEPLOYMENT (web-app)                                  │
+│                                                                               │
+│  Before Scaling (3 replicas):                                                │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐                              │
+│  │   Pod 1    │  │   Pod 2    │  │   Pod 3    │                              │
+│  │  CPU: 90%  │  │  CPU: 80%  │  │  CPU: 85%  │                              │
+│  └────────────┘  └────────────┘  └────────────┘                              │
+│                                                                               │
+│  After Scaling (4 replicas):                                                 │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐             │
+│  │   Pod 1    │  │   Pod 2    │  │   Pod 3    │  │   Pod 4    │             │
+│  │  CPU: 65%  │  │  CPU: 60%  │  │  CPU: 65%  │  │  CPU: 55%  │  NEW        │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘             │
+│                                                                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Scaling Timeline:
+
+Low Traffic                          High Traffic                    Cooldown
+    │                                     │                              │
+    ▼                                     ▼                              ▼
+┌───────┐                            ┌───────────┐                 ┌───────┐
+│ 2 pods│ ─────────────────────────► │ 10 pods   │ ──────────────► │ 3 pods│
+│ (min) │  Scale up (CPU > 70%)      │   (max)   │  Scale down     │       │
+└───────┘                            └───────────┘  (CPU < 70%)    └───────┘
+
+HPA Scaling Behavior:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  behavior:                                                                   │
+│    scaleDown:                                                                │
+│      stabilizationWindowSeconds: 300    # Wait 5 min before scaling down    │
+│      policies:                                                               │
+│      - type: Percent                                                         │
+│        value: 10                        # Max 10% decrease per period       │
+│        periodSeconds: 60                                                     │
+│    scaleUp:                                                                  │
+│      stabilizationWindowSeconds: 0      # Scale up immediately              │
+│      policies:                                                               │
+│      - type: Percent                                                         │
+│        value: 100                       # Can double pods per period        │
+│        periodSeconds: 15                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Types of Autoscaling:
+┌───────────────────┬─────────────────────────────────────────────────────────┐
+│ HPA               │ Scales pods horizontally based on metrics               │
+│ VPA               │ Adjusts pod CPU/memory requests vertically             │
+│ Cluster Autoscaler│ Adds/removes nodes based on pending pods               │
+│ KEDA              │ Event-driven autoscaling (queues, custom metrics)      │
+└───────────────────┴─────────────────────────────────────────────────────────┘

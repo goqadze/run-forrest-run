@@ -1,0 +1,35 @@
+================================================================================
+                    DEPLOYMENT & REPLICASET HIERARCHY
+================================================================================
+Description: Deployments manage ReplicaSets, which manage Pods.
+This enables rolling updates and rollbacks.
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                    DEPLOYMENT (web-deployment)                        │
+│                    replicas: 3                                        │
+│                    strategy: RollingUpdate                            │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │                 REPLICASET (web-deployment-7d9f)               │  │
+│  │                 desired: 3, current: 3, ready: 3               │  │
+│  │                                                                │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │  │
+│  │  │   POD #1     │  │   POD #2     │  │   POD #3     │         │  │
+│  │  │  (Running)   │  │  (Running)   │  │  (Running)   │         │  │
+│  │  │              │  │              │  │              │         │  │
+│  │  │ ┌──────────┐ │  │ ┌──────────┐ │  │ ┌──────────┐ │         │  │
+│  │  │ │Container │ │  │ │Container │ │  │ │Container │ │         │  │
+│  │  │ │  nginx   │ │  │ │  nginx   │ │  │ │  nginx   │ │         │  │
+│  │  │ └──────────┘ │  │ └──────────┘ │  │ └──────────┘ │         │  │
+│  │  │  IP: .1.10   │  │  IP: .1.11   │  │  IP: .1.12   │         │  │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘         │  │
+│  │                                                                │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────────┘
+
+Hierarchy:
+  Deployment ──creates──► ReplicaSet ──creates──► Pods
+
+Rolling Update Process:
+  1. New ReplicaSet created with new version
+  2. Pods gradually shifted: old RS scaled down, new RS scaled up
+  3. Old ReplicaSet kept for rollback (revision history)

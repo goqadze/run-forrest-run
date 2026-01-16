@@ -1,0 +1,75 @@
+================================================================================
+                    STATEFULSET FOR DATABASES
+================================================================================
+Description: StatefulSets provide stable identities and persistent storage
+for stateful applications like databases. Unlike Deployments, pods are
+created in order and have predictable names.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    STATEFULSET (postgres)                                    │
+│                    replicas: 3                                               │
+│                    serviceName: postgres-headless                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────────┐     ┌───────────────────┐     ┌───────────────────┐
+│   postgres-0      │     │   postgres-1      │     │   postgres-2      │
+│   (PRIMARY)       │     │   (REPLICA)       │     │   (REPLICA)       │
+│                   │     │                   │     │                   │
+│  Stable hostname: │     │  Stable hostname: │     │  Stable hostname: │
+│  postgres-0.      │     │  postgres-1.      │     │  postgres-2.      │
+│  postgres-headless│     │  postgres-headless│     │  postgres-headless│
+│  .default.svc     │     │  .default.svc     │     │  .default.svc     │
+│                   │     │                   │     │                   │
+│  Ordinal: 0       │     │  Ordinal: 1       │     │  Ordinal: 2       │
+└─────────┬─────────┘     └─────────┬─────────┘     └─────────┬─────────┘
+          │                         │                         │
+          ▼                         ▼                         ▼
+┌───────────────────┐     ┌───────────────────┐     ┌───────────────────┐
+│   PVC             │     │   PVC             │     │   PVC             │
+│   data-postgres-0 │     │   data-postgres-1 │     │   data-postgres-2 │
+│   100Gi           │     │   100Gi           │     │   100Gi           │
+└─────────┬─────────┘     └─────────┬─────────┘     └─────────┬─────────┘
+          │                         │                         │
+          ▼                         ▼                         ▼
+┌───────────────────┐     ┌───────────────────┐     ┌───────────────────┐
+│   PV (EBS Volume) │     │   PV (EBS Volume) │     │   PV (EBS Volume) │
+│   vol-0abc123     │     │   vol-0def456     │     │   vol-0ghi789     │
+└───────────────────┘     └───────────────────┘     └───────────────────┘
+
+Services for StatefulSet:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Headless Service (postgres-headless)                                        │
+│  clusterIP: None                                                             │
+│                                                                              │
+│  DNS Records Created:                                                        │
+│  - postgres-0.postgres-headless.default.svc.cluster.local → Pod IP          │
+│  - postgres-1.postgres-headless.default.svc.cluster.local → Pod IP          │
+│  - postgres-2.postgres-headless.default.svc.cluster.local → Pod IP          │
+│                                                                              │
+│  Use: Direct pod access, replication setup                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Regular Service (postgres)                                                  │
+│  clusterIP: 10.96.45.100                                                     │
+│                                                                              │
+│  DNS: postgres.default.svc.cluster.local                                     │
+│  Load balances across all healthy pods                                       │
+│                                                                              │
+│  Use: Application connections (read traffic)                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+StatefulSet vs Deployment:
+┌────────────────────┬─────────────────────────┬─────────────────────────┐
+│ Feature            │ Deployment              │ StatefulSet             │
+├────────────────────┼─────────────────────────┼─────────────────────────┤
+│ Pod Names          │ Random (app-7d9f-xyz)   │ Ordered (app-0, app-1)  │
+│ Scaling            │ Parallel                │ Sequential              │
+│ Storage            │ Shared or none          │ Per-pod PVC             │
+│ Network Identity   │ Random                  │ Stable DNS              │
+│ Use Case           │ Stateless apps          │ Databases, queues       │
+└────────────────────┴─────────────────────────┴─────────────────────────┘

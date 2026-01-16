@@ -1,0 +1,57 @@
+================================================================================
+                    PERSISTENT VOLUMES & CLAIMS
+================================================================================
+Description: PersistentVolumes (PV) provide storage that survives pod restarts.
+PersistentVolumeClaims (PVC) request storage from available PVs.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           STORAGE CLASSES                                    │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│  │  fast-ssd       │  │  standard       │  │  slow-hdd       │              │
+│  │  provisioner:   │  │  provisioner:   │  │  provisioner:   │              │
+│  │  aws-ebs-csi    │  │  aws-ebs-csi    │  │  aws-ebs-csi    │              │
+│  │  type: gp3      │  │  type: gp2      │  │  type: st1      │              │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼ Dynamic Provisioning
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PERSISTENT VOLUMES (PV)                                │
+│                                                                              │
+│  ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐        │
+│  │ PV: pv-database   │  │ PV: pv-logs       │  │ PV: pv-uploads    │        │
+│  │ Capacity: 100Gi   │  │ Capacity: 50Gi    │  │ Capacity: 200Gi   │        │
+│  │ Access: RWO       │  │ Access: RWX       │  │ Access: RWO       │        │
+│  │ Status: Bound     │  │ Status: Bound     │  │ Status: Available │        │
+│  │ Class: fast-ssd   │  │ Class: standard   │  │ Class: slow-hdd   │        │
+│  └─────────┬─────────┘  └─────────┬─────────┘  └───────────────────┘        │
+│            │                      │                                          │
+└────────────┼──────────────────────┼──────────────────────────────────────────┘
+             │ Bound                │ Bound
+             ▼                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    PERSISTENT VOLUME CLAIMS (PVC)                            │
+│                                                                              │
+│  ┌───────────────────┐  ┌───────────────────┐                               │
+│  │ PVC: db-storage   │  │ PVC: app-logs     │                               │
+│  │ Request: 100Gi    │  │ Request: 50Gi     │                               │
+│  │ Access: RWO       │  │ Access: RWX       │                               │
+│  │ Class: fast-ssd   │  │ Class: standard   │                               │
+│  └─────────┬─────────┘  └─────────┬─────────┘                               │
+│            │                      │                                          │
+└────────────┼──────────────────────┼──────────────────────────────────────────┘
+             │ Mounted              │ Mounted
+             ▼                      ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              PODS                                            │
+│  ┌───────────────────────────┐  ┌───────────────────────────────────────┐   │
+│  │  Pod: postgres-0          │  │  Pod: app-1        Pod: app-2         │   │
+│  │  Volume: /var/lib/pgsql   │  │  Volume: /logs     Volume: /logs      │   │
+│  │         (db-storage)      │  │       (app-logs)        (app-logs)    │   │
+│  └───────────────────────────┘  └───────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Access Modes:
+- RWO (ReadWriteOnce): Single node read/write
+- ROX (ReadOnlyMany): Multiple nodes read-only
+- RWX (ReadWriteMany): Multiple nodes read/write
